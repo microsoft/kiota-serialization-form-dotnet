@@ -15,6 +15,7 @@ public class FormSerializationWriterTests
             WorkDuration = TimeSpan.FromHours(1),
             StartWorkTime = new Time(8, 0, 0),
             BirthDay = new Date(2017, 9, 4),
+            Numbers = TestEnum.One | TestEnum.Two,
             AdditionalData = new Dictionary<string, object>
             {
                 {"mobilePhone", null!}, // write null value
@@ -33,6 +34,7 @@ public class FormSerializationWriterTests
         
         // Assert
         var expectedString =    "id=48d31887-5fad-4d73-a9f5-3c356e68a038&" +
+                                "numbers=one%2Ctwo&"+   // serializes enums
                                 "workDuration=PT1H&"+    // Serializes timespans
                                 "birthDay=2017-09-04&" + // Serializes dates
                                 "startWorkTime=08%3A00%3A00&" + //Serializes times
@@ -64,5 +66,25 @@ public class FormSerializationWriterTests
         // Act
         Assert.Throws<InvalidOperationException>(() => formSerializerWriter.WriteCollectionOfObjectValues(string.Empty, entityList));
     }
-
+    
+    [Fact]
+    public void WritesNestedObjectValuesInAdditionalData()
+    {
+        // Arrange
+        var testEntity = new TestEntity()
+        {
+            Id = "48d31887-5fad-4d73-a9f5-3c356e68a038",
+            Numbers = TestEnum.One | TestEnum.Two,
+            AdditionalData = new Dictionary<string, object>
+            {
+                {"nestedEntity", new TestEntity()
+                {
+                    Id = new Guid().ToString(),
+                }} // write nested entity
+            }
+        };
+        using var formSerializerWriter = new FormSerializationWriter();
+        // Act
+        Assert.Throws<InvalidOperationException>(() => formSerializerWriter.WriteObjectValue(string.Empty, testEntity));
+    }
 }

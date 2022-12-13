@@ -35,6 +35,7 @@ public class FormSerializationWriter : ISerializationWriter
             null => "null",
             bool b => b.ToString().ToLowerInvariant(),
             DateTimeOffset dto => dto.ToString("o"),
+            IParsable => throw new InvalidOperationException("Form serialization does not support nested objects."),
             _ => value.ToString(),            
         };
     }
