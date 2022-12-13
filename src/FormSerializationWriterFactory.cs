@@ -10,7 +10,7 @@ public class FormSerializationWriterFactory : ISerializationWriterFactory
     public ISerializationWriter GetSerializationWriter(string contentType) {
         if(string.IsNullOrEmpty(contentType))
             throw new ArgumentNullException(nameof(contentType));
-        else if(!ValidContentType.Equals(contentType, StringComparison.OrdinalIgnoreCase))
+        if(!ValidContentType.Equals(contentType, StringComparison.OrdinalIgnoreCase))
             throw new ArgumentOutOfRangeException($"expected a {ValidContentType} content type");
         return new FormSerializationWriter();
     }

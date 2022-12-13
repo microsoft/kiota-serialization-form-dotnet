@@ -22,8 +22,6 @@ public class FormParseNodeTests
                                         "birthDay=2017-09-04&" +
                                         "id=48d31887-5fad-4d73-a9f5-3c356e68a038";
 
-    private static readonly string TestUserCollectionString = $"[{TestUserForm}]";
-
     [Fact]
     public void GetsEntityValueFromForm()
     {
