@@ -34,7 +34,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Kiota.Abstractions" Version="1.0.0-rc.1" />
+    <PackageReference Include="Microsoft.Kiota.Abstractions" Version="1.0.0-rc.2" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
