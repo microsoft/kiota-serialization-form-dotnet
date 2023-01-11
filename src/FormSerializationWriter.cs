@@ -132,7 +132,7 @@ public class FormSerializationWriter : ISerializationWriter
     public void WriteStringValue(string key, string value) {
         if(value == null) return;
         if(_builder.Length > 0) _builder.Append('&');
-        _builder.Append(key).Append('=').Append(Uri.EscapeDataString(value));
+        _builder.Append(Uri.EscapeDataString(key)).Append('=').Append(Uri.EscapeDataString(value));
     }
     /// <inheritdoc/>
     public void WriteTimeSpanValue(string key, TimeSpan? value) {

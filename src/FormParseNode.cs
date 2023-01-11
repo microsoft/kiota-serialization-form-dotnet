@@ -21,10 +21,14 @@ public class FormParseNode : IParseNode
         Fields = rawValue.Split(new char[] {'&'}, StringSplitOptions.RemoveEmptyEntries)
                         .Select(static x => x.Split(new char[] {'='}, StringSplitOptions.RemoveEmptyEntries))
                         .Where(static x => x.Length == 2)
-                        .Select(static x => (key: x[0].Trim(), value: x[1].Trim()))
+                        .Select(static x => (key: sanitizeKey(x[0]), value: x[1].Trim()))
                         .GroupBy(static x => x.key, StringComparer.OrdinalIgnoreCase)
                         .Select(static x => (key: x.Key, value: string.Join(",", x.Select(static y => y.value))))
                         .ToDictionary(static x => x.key, static x => x.value, StringComparer.OrdinalIgnoreCase);
+    }
+    private static string sanitizeKey(string key) {
+        if (string.IsNullOrEmpty(key)) return key;
+        return Uri.UnescapeDataString(key.Trim());
     }
     /// <inheritdoc/>
     public Action<IParsable>? OnBeforeAssignFieldValues { get; set; }
@@ -41,7 +45,7 @@ public class FormParseNode : IParseNode
     /// <inheritdoc/>
     public byte? GetByteValue() => byte.TryParse(DecodedValue, out var result) ? result : null;
     /// <inheritdoc/>
-    public IParseNode? GetChildNode(string identifier) => Fields.TryGetValue(identifier, out var value) ? new FormParseNode(value) : null;
+    public IParseNode? GetChildNode(string identifier) => Fields.TryGetValue(sanitizeKey(identifier), out var value) ? new FormParseNode(value) : null;
     /// <inheritdoc/>
     public IEnumerable<T> GetCollectionOfObjectValues<T>(ParsableFactory<T> factory) where T : IParsable => throw new InvalidOperationException("collections are not supported with uri form encoding");
     /// <inheritdoc/>
