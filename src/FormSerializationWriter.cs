@@ -28,10 +28,9 @@ public class FormSerializationWriter : ISerializationWriter
     public void WriteAdditionalData(IDictionary<string, object> value) {
         if(value == null) return;
         foreach(var kvp in value.Select(static x => (key: x.Key, value: GetNormalizedStringRepresentation(x.Value))))
-            WriteStringValue(kvp.key, kvp.value);
+            WriteStringValue(kvp.key, kvp.value!);
     }
-    private static string GetNormalizedStringRepresentation(object value) {
-#pragma warning disable CS8603 // Possible null reference return.
+    private static string? GetNormalizedStringRepresentation(object value) {
         return value switch {
             null => "null",
             bool b => b.ToString().ToLowerInvariant(),
@@ -39,7 +38,6 @@ public class FormSerializationWriter : ISerializationWriter
             IParsable => throw new InvalidOperationException("Form serialization does not support nested objects."),
             _ => value.ToString(),            
         };
-#pragma warning restore CS8603 // Possible null reference return.
     }
     /// <inheritdoc/>
     public void WriteBoolValue(string? key, bool? value) {
