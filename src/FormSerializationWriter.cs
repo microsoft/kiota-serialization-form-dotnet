@@ -28,9 +28,9 @@ public class FormSerializationWriter : ISerializationWriter
     public void WriteAdditionalData(IDictionary<string, object> value) {
         if(value == null) return;
         foreach(var kvp in value.Select(static x => (key: x.Key, value: GetNormalizedStringRepresentation(x.Value))))
-            WriteStringValue(kvp.key, kvp.value);
+            WriteStringValue(kvp.key, kvp.value!);
     }
-    private static string GetNormalizedStringRepresentation(object value) {
+    private static string? GetNormalizedStringRepresentation(object value) {
         return value switch {
             null => "null",
             bool b => b.ToString().ToLowerInvariant(),
@@ -40,70 +40,70 @@ public class FormSerializationWriter : ISerializationWriter
         };
     }
     /// <inheritdoc/>
-    public void WriteBoolValue(string key, bool? value) {
+    public void WriteBoolValue(string? key, bool? value) {
         if(value.HasValue) 
             WriteStringValue(key, value.Value.ToString().ToLowerInvariant());
     }
     /// <inheritdoc/>
-    public void WriteByteArrayValue(string key, byte[] value) {
+    public void WriteByteArrayValue(string? key, byte[]? value) {
         if(value != null)//empty array is meaningful
             WriteStringValue(key, value.Any() ? Convert.ToBase64String(value) : string.Empty);
     }
     /// <inheritdoc/>
-    public void WriteByteValue(string key, byte? value) {
+    public void WriteByteValue(string? key, byte? value) {
         if(value.HasValue) 
             WriteIntValue(key, Convert.ToInt32(value.Value));
     }
     /// <inheritdoc/>
-    public void WriteCollectionOfObjectValues<T>(string key, IEnumerable<T> values) where T : IParsable => throw new InvalidOperationException("Form serialization does not support collections.");
+    public void WriteCollectionOfObjectValues<T>(string? key, IEnumerable<T>? values) where T : IParsable => throw new InvalidOperationException("Form serialization does not support collections.");
     /// <inheritdoc/>
-    public void WriteCollectionOfPrimitiveValues<T>(string key, IEnumerable<T> values) => throw new InvalidOperationException("Form serialization does not support collections.");
+    public void WriteCollectionOfPrimitiveValues<T>(string? key, IEnumerable<T>? values) => throw new InvalidOperationException("Form serialization does not support collections.");
     /// <inheritdoc/>
-    public void WriteDateTimeOffsetValue(string key, DateTimeOffset? value) {
+    public void WriteDateTimeOffsetValue(string? key, DateTimeOffset? value) {
         if(value.HasValue) 
             WriteStringValue(key, value.Value.ToString("o"));
     }
     /// <inheritdoc/>
-    public void WriteDateValue(string key, Date? value) {
+    public void WriteDateValue(string? key, Date? value) {
         if(value.HasValue) 
             WriteStringValue(key, value.Value.ToString());
     }
     /// <inheritdoc/>
-    public void WriteDecimalValue(string key, decimal? value) {
+    public void WriteDecimalValue(string? key, decimal? value) {
         if(value.HasValue) 
             WriteStringValue(key, value.Value.ToString(CultureInfo.InvariantCulture));
     }
     /// <inheritdoc/>
-    public void WriteDoubleValue(string key, double? value) {
+    public void WriteDoubleValue(string? key, double? value) {
         if(value.HasValue) 
             WriteStringValue(key, value.Value.ToString(CultureInfo.InvariantCulture));
     }
     /// <inheritdoc/>
-    public void WriteFloatValue(string key, float? value) {
+    public void WriteFloatValue(string? key, float? value) {
         if(value.HasValue) 
             WriteStringValue(key, value.Value.ToString(CultureInfo.InvariantCulture));
     }
     /// <inheritdoc/>
-    public void WriteGuidValue(string key, Guid? value) {
+    public void WriteGuidValue(string? key, Guid? value) {
         if(value.HasValue) 
             WriteStringValue(key, value.Value.ToString("D"));
     }
     /// <inheritdoc/>
-    public void WriteIntValue(string key, int? value) {
+    public void WriteIntValue(string? key, int? value) {
         if(value.HasValue) 
             WriteStringValue(key, value.Value.ToString(CultureInfo.InvariantCulture));
     }
     /// <inheritdoc/>
-    public void WriteLongValue(string key, long? value) {
+    public void WriteLongValue(string? key, long? value) {
         if(value.HasValue) 
             WriteStringValue(key, value.Value.ToString(CultureInfo.InvariantCulture));
     }
     /// <inheritdoc/>
-    public void WriteNullValue(string key) {
+    public void WriteNullValue(string? key) {
         WriteStringValue(key, "null");
     }
     /// <inheritdoc/>
-    public void WriteObjectValue<T>(string key, T value, params IParsable[] additionalValuesToMerge) where T : IParsable
+    public void WriteObjectValue<T>(string? key, T? value, params IParsable[] additionalValuesToMerge) where T : IParsable
     {
         if(depth > 0) throw new InvalidOperationException("Form serialization does not support nested objects.");
         depth++;
@@ -124,32 +124,32 @@ public class FormSerializationWriter : ISerializationWriter
             OnAfterObjectSerialization?.Invoke(value);
     }
     /// <inheritdoc/>
-    public void WriteSbyteValue(string key, sbyte? value) {
+    public void WriteSbyteValue(string? key, sbyte? value) {
         if(value.HasValue) 
             WriteIntValue(key, Convert.ToInt32(value.Value));
     }
     /// <inheritdoc/>
-    public void WriteStringValue(string key, string value) {
+    public void WriteStringValue(string? key, string? value) {
         if(value == null) return;
         if(_builder.Length > 0) _builder.Append('&');
-        _builder.Append(Uri.EscapeDataString(key)).Append('=').Append(Uri.EscapeDataString(value));
+        _builder.Append(Uri.EscapeDataString(key!)).Append('=').Append(Uri.EscapeDataString(value));
     }
     /// <inheritdoc/>
-    public void WriteTimeSpanValue(string key, TimeSpan? value) {
+    public void WriteTimeSpanValue(string? key, TimeSpan? value) {
         if(value.HasValue) 
             WriteStringValue(key, XmlConvert.ToString(value.Value));
     }
     /// <inheritdoc/>
-    public void WriteTimeValue(string key, Time? value) {
+    public void WriteTimeValue(string? key, Time? value) {
         if(value.HasValue) 
             WriteStringValue(key, value.Value.ToString());
     }
-    void ISerializationWriter.WriteCollectionOfEnumValues<T>(string key, IEnumerable<T?> values) {
+    void ISerializationWriter.WriteCollectionOfEnumValues<T>(string? key, IEnumerable<T?>? values) {
         if(values == null || !values.Any()) return;
         WriteStringValue(key, string.Join(",", values.Where(static x => x.HasValue)
             .Select(static x => x!.Value.ToString().ToFirstCharacterLowerCase())));
     }
-    void ISerializationWriter.WriteEnumValue<T>(string key, T? value) {
+    void ISerializationWriter.WriteEnumValue<T>(string? key, T? value) {
         if(value.HasValue)
         {
             if(typeof(T).GetCustomAttributes<FlagsAttribute>().Any())
