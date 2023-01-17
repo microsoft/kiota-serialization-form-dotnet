@@ -103,7 +103,7 @@ public class FormParseNode : IParseNode
             else if (itemAdditionalData != null)
             {
                 Debug.WriteLine($"found additional property {fieldValue.Key} to deserialize");
-                itemAdditionalData.TryAdd(fieldValue.Key, fieldValue.Value);
+                IDictionaryExtensions.TryAdd(itemAdditionalData, fieldValue.Key, fieldValue.Value);
             }
             else
             {
