@@ -103,7 +103,7 @@ public class FormSerializationWriter : ISerializationWriter
         WriteStringValue(key, "null");
     }
     /// <inheritdoc/>
-    public void WriteObjectValue<T>(string? key, T? value, params IParsable[] additionalValuesToMerge) where T : IParsable
+    public void WriteObjectValue<T>(string? key, T? value, params IParsable?[] additionalValuesToMerge) where T : IParsable
     {
         if(depth > 0) throw new InvalidOperationException("Form serialization does not support nested objects.");
         depth++;
@@ -113,12 +113,12 @@ public class FormSerializationWriter : ISerializationWriter
             OnStartObjectSerialization?.Invoke(value, this);
             value.Serialize(this);
         }
-        foreach(var additionalValueToMerge in additionalValuesToMerge)
+        foreach(var additionalValueToMerge in additionalValuesToMerge.Where(static x => x != null))
         {
-            OnBeforeObjectSerialization?.Invoke(additionalValueToMerge);
-            OnStartObjectSerialization?.Invoke(additionalValueToMerge, this);
-            additionalValueToMerge.Serialize(this);
-            OnAfterObjectSerialization?.Invoke(additionalValueToMerge);
+            OnBeforeObjectSerialization?.Invoke(additionalValueToMerge!);
+            OnStartObjectSerialization?.Invoke(additionalValueToMerge!, this);
+            additionalValueToMerge!.Serialize(this);
+            OnAfterObjectSerialization?.Invoke(additionalValueToMerge!);
         }
         if(value != null)
             OnAfterObjectSerialization?.Invoke(value);
