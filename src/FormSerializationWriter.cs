@@ -107,9 +107,8 @@ public class FormSerializationWriter : ISerializationWriter
     public void WriteCollectionOfPrimitiveValues<T>(string? key, IEnumerable<T>? values)
     {
         if(values == null || !values.Any()) return;
-        foreach(var value in values)
-            if(value != null) 
-                WriteAnyValue(key,value);
+        foreach(var value in values.Where(static x => x != null)
+            WriteAnyValue(key,value);
     }
     /// <inheritdoc/>
     public void WriteDateTimeOffsetValue(string? key, DateTimeOffset? value) {
