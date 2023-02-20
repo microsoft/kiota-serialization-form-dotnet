@@ -108,7 +108,7 @@ public class FormSerializationWriter : ISerializationWriter
     {
         if(values == null || !values.Any()) return;
         foreach(var value in values.Where(static x => x != null))
-            WriteAnyValue(key,value);
+            WriteAnyValue(key,value!);
     }
     /// <inheritdoc/>
     public void WriteDateTimeOffsetValue(string? key, DateTimeOffset? value) {
