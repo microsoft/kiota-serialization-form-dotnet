@@ -39,8 +39,8 @@ public class FormSerializationWriter : ISerializationWriter
             case null:
                 WriteNullValue(key);
                 break;
-            case string s:
-                WriteStringValue(key, s);
+            case decimal d:
+                WriteDecimalValue(key, d);
                 break;
             case bool b:
                 WriteBoolValue(key, b);
@@ -72,9 +72,6 @@ public class FormSerializationWriter : ISerializationWriter
             case TimeSpan timeSpan:
                 WriteTimeSpanValue(key, timeSpan);
                 break;
-            case Date date:
-                WriteDateValue(key, date);
-                break;
             case Time time:
                 WriteTimeValue(key, time);
                 break;
@@ -84,7 +81,7 @@ public class FormSerializationWriter : ISerializationWriter
             case IParsable:
                 throw new InvalidOperationException("Form serialization does not support nested objects.");
             default:
-                WriteStringValue(key,value.ToString());
+                WriteStringValue(key,value.ToString());// works for Date and String types
                 break;
 
         }

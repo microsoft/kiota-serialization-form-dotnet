@@ -51,6 +51,36 @@ public class FormParseNodeTests
     }
 
     [Fact]
+    public void GetCollectionOfNumberPrimitiveValuesFromForm()
+    {
+        string TestFormData = "numbers=1&" +
+                              "numbers=2&" +
+                              "numbers=3&";
+        var formParseNode = new FormParseNode(TestFormData);
+        var numberNode = formParseNode.GetChildNode("numbers");
+        var numberCollection = numberNode?.GetCollectionOfPrimitiveValues<int?>();
+        Assert.NotNull(numberCollection);
+        Assert.Equal(3, numberCollection.Count());
+        Assert.Equal(1, numberCollection.First());
+        var numberCollectionAsStrings = numberNode?.GetCollectionOfPrimitiveValues<string?>();
+        Assert.NotNull(numberCollectionAsStrings);
+        Assert.Equal(3, numberCollectionAsStrings.Count());
+        Assert.Equal("1", numberCollectionAsStrings.First());
+        var numberCollectionAsShort = numberNode?.GetCollectionOfPrimitiveValues<sbyte?>();
+        Assert.NotNull(numberCollectionAsShort);
+        Assert.Equal(3, numberCollectionAsShort.Count());
+        Assert.Equal((sbyte)1, numberCollectionAsShort.First());
+        var numberCollectionAsDouble = numberNode?.GetCollectionOfPrimitiveValues<double?>();
+        Assert.NotNull(numberCollectionAsDouble);
+        Assert.Equal(3, numberCollectionAsDouble.Count());
+        Assert.Equal((double)1, numberCollectionAsDouble.First());
+        var numberCollectionAsFloat = numberNode?.GetCollectionOfPrimitiveValues<float?>();
+        Assert.NotNull(numberCollectionAsFloat);
+        Assert.Equal(3, numberCollectionAsFloat.Count());
+        Assert.Equal((float)1, numberCollectionAsFloat.First());
+    }
+
+    [Fact]
     public void GetCollectionOfObjectValuesFromForm()
     {
         var formParseNode = new FormParseNode(TestUserForm);

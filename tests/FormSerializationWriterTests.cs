@@ -27,6 +27,10 @@ public class FormSerializationWriterTests
                 {"jobTitle","Author"}, // write string value
                 {"otherPhones", new List<string>{ "123456789", "987654321"} },
                 {"createdDateTime", DateTimeOffset.MinValue}, // write date value
+                { "decimalValue", 2m},
+                { "floatValue", 1.2f},
+                { "longValue", 2L},
+                { "doubleValue", 2d},
             }
         };
         using var formSerializerWriter = new FormSerializationWriter();
@@ -48,7 +52,11 @@ public class FormSerializationWriterTests
                                 "accountEnabled=false&" +
                                 "jobTitle=Author&" +
                                 "otherPhones=123456789&otherPhones=987654321&" + // Serializes collection of scalars using the same key which we present in the AdditionalData
-                                "createdDateTime=0001-01-01T00%3A00%3A00.0000000%2B00%3A00";
+                                "createdDateTime=0001-01-01T00%3A00%3A00.0000000%2B00%3A00&" +
+                                "decimalValue=2&" +
+                                "floatValue=1.2&" +
+                                "longValue=2&" +
+                                "doubleValue=2";
         Assert.Equal(expectedString, serializedFormString);
     }
 
