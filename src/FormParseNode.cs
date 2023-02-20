@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Kiota.Abstractions;
@@ -48,8 +48,66 @@ public class FormParseNode : IParseNode
     public IParseNode? GetChildNode(string identifier) => Fields.TryGetValue(sanitizeKey(identifier), out var value) ? new FormParseNode(value) : null;
     /// <inheritdoc/>
     public IEnumerable<T> GetCollectionOfObjectValues<T>(ParsableFactory<T> factory) where T : IParsable => throw new InvalidOperationException("collections are not supported with uri form encoding");
-    /// <inheritdoc/>
-    public IEnumerable<T> GetCollectionOfPrimitiveValues<T>() => throw new InvalidOperationException("collections are not supported with uri form encoding");
+
+    private static readonly Type booleanType = typeof(bool?);
+    private static readonly Type byteType = typeof(byte?);
+    private static readonly Type sbyteType = typeof(sbyte?);
+    private static readonly Type stringType = typeof(string);
+    private static readonly Type intType = typeof(int?);
+    private static readonly Type decimalType = typeof(decimal?);
+    private static readonly Type floatType = typeof(float?);
+    private static readonly Type doubleType = typeof(double?);
+    private static readonly Type guidType = typeof(Guid?);
+    private static readonly Type dateTimeOffsetType = typeof(DateTimeOffset?);
+    private static readonly Type timeSpanType = typeof(TimeSpan?);
+    private static readonly Type dateType = typeof(Date?);
+    private static readonly Type timeType = typeof(Time?);
+
+    /// <summary>
+    /// Get the collection of primitives of type <typeparam name="T"/>from the form node
+    /// </summary>
+    /// <returns>A collection of objects</returns>
+    public IEnumerable<T> GetCollectionOfPrimitiveValues<T>()
+    {
+        var genericType = typeof(T);
+        var primitiveValueCollection = DecodedValue.Split(new[] { ',' } , StringSplitOptions.RemoveEmptyEntries);
+        foreach(var collectionValue in primitiveValueCollection)
+        {
+            var currentParseNode = new FormParseNode(collectionValue)
+            {
+                OnBeforeAssignFieldValues = OnBeforeAssignFieldValues,
+                OnAfterAssignFieldValues = OnAfterAssignFieldValues
+            };
+            if(genericType == booleanType)
+                yield return (T)(object)currentParseNode.GetBoolValue()!;
+            else if(genericType == byteType)
+                yield return (T)(object)currentParseNode.GetByteValue()!;
+            else if(genericType == sbyteType)
+                yield return (T)(object)currentParseNode.GetSbyteValue()!;
+            else if(genericType == stringType)
+                yield return (T)(object)currentParseNode.GetStringValue()!;
+            else if(genericType == intType)
+                yield return (T)(object)currentParseNode.GetIntValue()!;
+            else if(genericType == floatType)
+                yield return (T)(object)currentParseNode.GetFloatValue()!;
+            else if(genericType == doubleType)
+                yield return (T)(object)currentParseNode.GetDoubleValue()!;
+            else if(genericType == decimalType)
+                yield return (T)(object)currentParseNode.GetDecimalValue()!;
+            else if(genericType == guidType)
+                yield return (T)(object)currentParseNode.GetGuidValue()!;
+            else if(genericType == dateTimeOffsetType)
+                yield return (T)(object)currentParseNode.GetDateTimeOffsetValue()!;
+            else if(genericType == timeSpanType)
+                yield return (T)(object)currentParseNode.GetTimeSpanValue()!;
+            else if(genericType == dateType)
+                yield return (T)(object)currentParseNode.GetDateValue()!;
+            else if(genericType == timeType)
+                yield return (T)(object)currentParseNode.GetTimeValue()!;
+            else
+                throw new InvalidOperationException($"unknown type for deserialization {genericType.FullName}");
+        }
+    }
     /// <inheritdoc/>
     public DateTimeOffset? GetDateTimeOffsetValue() => DateTimeOffset.TryParse(DecodedValue, out var result) ? result : null;
     /// <inheritdoc/>

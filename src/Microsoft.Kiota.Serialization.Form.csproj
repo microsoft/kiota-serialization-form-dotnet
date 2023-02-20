@@ -16,7 +16,7 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <Deterministic>true</Deterministic>
     <VersionPrefix>1.0.0</VersionPrefix>
-    <VersionSuffix>rc.4</VersionSuffix>
+    <VersionSuffix>rc.5</VersionSuffix>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <LangVersion>latest</LangVersion>

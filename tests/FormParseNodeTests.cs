@@ -20,6 +20,8 @@ public class FormParseNodeTests
                                         "endWorkTime=17:00:00.0000000&" +
                                         "userPrincipalName=MeganB@M365x214355.onmicrosoft.com&" +
                                         "birthDay=2017-09-04&" +
+                                        "deviceNames=device1&deviceNames=device2&"+ //collection property
+                                        "otherPhones=123456789&otherPhones=987654321&" + //collection property for additionalData
                                         "id=48d31887-5fad-4d73-a9f5-3c356e68a038";
 
     [Fact]
@@ -33,9 +35,13 @@ public class FormParseNodeTests
         Assert.NotNull(testEntity);
         Assert.Null(testEntity.OfficeLocation);
         Assert.NotEmpty(testEntity.AdditionalData);
+        Assert.Equal(2, testEntity.DeviceNames?.Count);// collection is deserialized
         Assert.True(testEntity.AdditionalData.ContainsKey("jobTitle"));
         Assert.True(testEntity.AdditionalData.ContainsKey("mobilePhone"));
+        Assert.True(testEntity.AdditionalData.ContainsKey("otherPhones"));
+        Assert.Equal("true",testEntity.AdditionalData["accountEnabled"]);
         Assert.Equal("Auditor", testEntity.AdditionalData["jobTitle"]);
+        Assert.Equal("123456789,987654321", testEntity.AdditionalData["otherPhones"]);
         Assert.Equal("48d31887-5fad-4d73-a9f5-3c356e68a038", testEntity.Id);
         Assert.Equal(TestEnum.One | TestEnum.Two, testEntity.Numbers ); // Unknown enum value is not included
         Assert.Equal(TimeSpan.FromHours(1), testEntity.WorkDuration); // Parses timespan values
@@ -45,17 +51,70 @@ public class FormParseNodeTests
     }
 
     [Fact]
+    public void GetCollectionOfNumberPrimitiveValuesFromForm()
+    {
+        string TestFormData = "numbers=1&" +
+                              "numbers=2&" +
+                              "numbers=3&";
+        var formParseNode = new FormParseNode(TestFormData);
+        var numberNode = formParseNode.GetChildNode("numbers");
+        var numberCollection = numberNode?.GetCollectionOfPrimitiveValues<int?>();
+        Assert.NotNull(numberCollection);
+        Assert.Equal(3, numberCollection.Count());
+        Assert.Equal(1, numberCollection.First());
+        var numberCollectionAsStrings = numberNode?.GetCollectionOfPrimitiveValues<string?>();
+        Assert.NotNull(numberCollectionAsStrings);
+        Assert.Equal(3, numberCollectionAsStrings.Count());
+        Assert.Equal("1", numberCollectionAsStrings.First());
+        var numberCollectionAsShort = numberNode?.GetCollectionOfPrimitiveValues<sbyte?>();
+        Assert.NotNull(numberCollectionAsShort);
+        Assert.Equal(3, numberCollectionAsShort.Count());
+        Assert.Equal((sbyte)1, numberCollectionAsShort.First());
+        var numberCollectionAsDouble = numberNode?.GetCollectionOfPrimitiveValues<double?>();
+        Assert.NotNull(numberCollectionAsDouble);
+        Assert.Equal(3, numberCollectionAsDouble.Count());
+        Assert.Equal((double)1, numberCollectionAsDouble.First());
+        var numberCollectionAsFloat = numberNode?.GetCollectionOfPrimitiveValues<float?>();
+        Assert.NotNull(numberCollectionAsFloat);
+        Assert.Equal(3, numberCollectionAsFloat.Count());
+        Assert.Equal((float)1, numberCollectionAsFloat.First());
+        var numberCollectionAsDecimal = numberNode?.GetCollectionOfPrimitiveValues<decimal?>();
+        Assert.NotNull(numberCollectionAsDecimal);
+        Assert.Equal(3, numberCollectionAsDecimal.Count());
+        Assert.Equal((decimal)1, numberCollectionAsDecimal.First());
+    }
+
+    [Fact]
+    public void GetCollectionOfBooleanPrimitiveValuesFromForm()
+    {
+        string TestFormData = "bools=true&" +
+                              "bools=false";
+        var formParseNode = new FormParseNode(TestFormData);
+        var numberNode = formParseNode.GetChildNode("bools");
+        var numberCollection = numberNode?.GetCollectionOfPrimitiveValues<bool?>();
+        Assert.NotNull(numberCollection);
+        Assert.Equal(2, numberCollection.Count());
+        Assert.Equal(true, numberCollection.First());
+    }
+
+    [Fact]
+    public void GetCollectionOfGuidPrimitiveValuesFromForm()
+    {
+        string TestFormData = "ids=48d31887-5fad-4d73-a9f5-3c356e68a038&" +
+                              "ids=48d31887-5fad-4d73-a9f5-3c356e68a038";
+        var formParseNode = new FormParseNode(TestFormData);
+        var numberNode = formParseNode.GetChildNode("ids");
+        var numberCollection = numberNode?.GetCollectionOfPrimitiveValues<Guid?>();
+        Assert.NotNull(numberCollection);
+        Assert.Equal(2, numberCollection.Count());
+        Assert.Equal(Guid.Parse("48d31887-5fad-4d73-a9f5-3c356e68a038"), numberCollection.First());
+    }
+
+    [Fact]
     public void GetCollectionOfObjectValuesFromForm()
     {
         var formParseNode = new FormParseNode(TestUserForm);
         Assert.Throws<InvalidOperationException>(() => formParseNode.GetCollectionOfObjectValues<TestEntity>(static x => new TestEntity()));
-    }
-
-    [Fact]
-    public void GetsChildNodeAndGetCollectionOfPrimitiveValuesFromFormParseNode()
-    {
-        var rootParseNode = new FormParseNode(TestUserForm);
-        Assert.Throws<InvalidOperationException>(() => rootParseNode.GetCollectionOfPrimitiveValues<string>());
     }
 
     [Fact]

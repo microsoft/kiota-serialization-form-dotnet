@@ -27,17 +27,64 @@ public class FormSerializationWriter : ISerializationWriter
     /// <inheritdoc/>
     public void WriteAdditionalData(IDictionary<string, object> value) {
         if(value == null) return;
-        foreach(var kvp in value.Select(static x => (key: x.Key, value: GetNormalizedStringRepresentation(x.Value))))
-            WriteStringValue(kvp.key, kvp.value!);
+
+        foreach(var dataValue in value)
+            WriteAnyValue(dataValue.Key, dataValue.Value);
     }
-    private static string? GetNormalizedStringRepresentation(object value) {
-        return value switch {
-            null => "null",
-            bool b => b.ToString().ToLowerInvariant(),
-            DateTimeOffset dto => dto.ToString("o"),
-            IParsable => throw new InvalidOperationException("Form serialization does not support nested objects."),
-            _ => value.ToString(),            
-        };
+
+    private void WriteAnyValue(string? key, object value)
+    {
+        switch(value)
+        {
+            case null:
+                WriteNullValue(key);
+                break;
+            case decimal d:
+                WriteDecimalValue(key, d);
+                break;
+            case bool b:
+                WriteBoolValue(key, b);
+                break;
+            case byte b:
+                WriteByteValue(key, b);
+                break;
+            case sbyte b:
+                WriteSbyteValue(key, b);
+                break;
+            case int i:
+                WriteIntValue(key, i);
+                break;
+            case float f:
+                WriteFloatValue(key, f);
+                break;
+            case long l:
+                WriteLongValue(key, l);
+                break;
+            case double d:
+                WriteDoubleValue(key, d);
+                break;
+            case Guid g:
+                WriteGuidValue(key, g);
+                break;
+            case DateTimeOffset dto:
+                WriteDateTimeOffsetValue(key, dto);
+                break;
+            case TimeSpan timeSpan:
+                WriteTimeSpanValue(key, timeSpan);
+                break;
+            case Time time:
+                WriteTimeValue(key, time);
+                break;
+            case IEnumerable<object> coll:
+                WriteCollectionOfPrimitiveValues(key, coll);
+                break;
+            case IParsable:
+                throw new InvalidOperationException("Form serialization does not support nested objects.");
+            default:
+                WriteStringValue(key,value.ToString());// works for Date and String types
+                break;
+
+        }
     }
     /// <inheritdoc/>
     public void WriteBoolValue(string? key, bool? value) {
@@ -57,7 +104,12 @@ public class FormSerializationWriter : ISerializationWriter
     /// <inheritdoc/>
     public void WriteCollectionOfObjectValues<T>(string? key, IEnumerable<T>? values) where T : IParsable => throw new InvalidOperationException("Form serialization does not support collections.");
     /// <inheritdoc/>
-    public void WriteCollectionOfPrimitiveValues<T>(string? key, IEnumerable<T>? values) => throw new InvalidOperationException("Form serialization does not support collections.");
+    public void WriteCollectionOfPrimitiveValues<T>(string? key, IEnumerable<T>? values)
+    {
+        if(values == null || !values.Any()) return;
+        foreach(var value in values.Where(static x => x != null))
+            WriteAnyValue(key,value!);
+    }
     /// <inheritdoc/>
     public void WriteDateTimeOffsetValue(string? key, DateTimeOffset? value) {
         if(value.HasValue) 
@@ -130,9 +182,9 @@ public class FormSerializationWriter : ISerializationWriter
     }
     /// <inheritdoc/>
     public void WriteStringValue(string? key, string? value) {
-        if(value == null) return;
+        if(string.IsNullOrEmpty(key) || string.IsNullOrEmpty(value)) return;
         if(_builder.Length > 0) _builder.Append('&');
-        _builder.Append(Uri.EscapeDataString(key!)).Append('=').Append(Uri.EscapeDataString(value));
+        _builder.Append(Uri.EscapeDataString(key)).Append('=').Append(Uri.EscapeDataString(value));
     }
     /// <inheritdoc/>
     public void WriteTimeSpanValue(string? key, TimeSpan? value) {
