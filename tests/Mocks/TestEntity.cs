@@ -9,6 +9,8 @@ public class TestEntity : IParsable, IAdditionalDataHolder
     /// <summary>Read-only.</summary>
     public string? Id { get; set; }
     /// <summary>Read-only.</summary>
+    public List<string>? DeviceNames { get; set; }
+    /// <summary>Read-only.</summary>
     public TestEnum? Numbers { get; set; }
     /// <summary>Read-only.</summary>
     public TimeSpan? WorkDuration { get; set; }
@@ -43,6 +45,7 @@ public class TestEntity : IParsable, IAdditionalDataHolder
             {"birthDay", n => { BirthDay = n.GetDateValue(); } },
             {"startWorkTime", n => { StartWorkTime = n.GetTimeValue(); } },
             {"endWorkTime", n => { EndWorkTime = n.GetTimeValue(); } },
+            {"deviceNames", n => { DeviceNames = n.GetCollectionOfPrimitiveValues<string>().ToList(); } },
         };
     }
     /// <summary>
@@ -60,6 +63,7 @@ public class TestEntity : IParsable, IAdditionalDataHolder
         writer.WriteDateValue("birthDay", BirthDay);
         writer.WriteTimeValue("startWorkTime", StartWorkTime);
         writer.WriteTimeValue("endWorkTime", EndWorkTime);
+        writer.WriteCollectionOfPrimitiveValues<string>("deviceNames", DeviceNames);
         writer.WriteAdditionalData(AdditionalData);
     }
     public static TestEntity CreateFromDiscriminator(IParseNode parseNode) {

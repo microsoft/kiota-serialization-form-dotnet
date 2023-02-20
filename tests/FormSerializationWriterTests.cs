@@ -16,11 +16,16 @@ public class FormSerializationWriterTests
             StartWorkTime = new Time(8, 0, 0),
             BirthDay = new Date(2017, 9, 4),
             Numbers = TestEnum.One | TestEnum.Two,
+            DeviceNames = new List<string>
+            {
+                "device1", "device2"
+            },
             AdditionalData = new Dictionary<string, object>
             {
                 {"mobilePhone", null!}, // write null value
                 {"accountEnabled", false}, // write bool value
                 {"jobTitle","Author"}, // write string value
+                {"otherPhones", new List<string>{ "123456789", "987654321"} },
                 {"createdDateTime", DateTimeOffset.MinValue}, // write date value
             }
         };
@@ -38,15 +43,17 @@ public class FormSerializationWriterTests
                                 "workDuration=PT1H&"+    // Serializes timespans
                                 "birthDay=2017-09-04&" + // Serializes dates
                                 "startWorkTime=08%3A00%3A00&" + //Serializes times
+                                "deviceNames=device1&deviceNames=device2&" + // Serializes collection of scalars using the same key
                                 "mobilePhone=null&" + // Serializes null values
                                 "accountEnabled=false&" +
                                 "jobTitle=Author&" +
+                                "otherPhones=123456789&otherPhones=987654321&" + // Serializes collection of scalars using the same key which we present in the AdditionalData
                                 "createdDateTime=0001-01-01T00%3A00%3A00.0000000%2B00%3A00";
         Assert.Equal(expectedString, serializedFormString);
     }
 
     [Fact]
-    public void WritesSampleCollectionOfObjectValues()
+    public void DoesNotWritesSampleCollectionOfObjectValues()
     {
         // Arrange
         var testEntity = new TestEntity()
@@ -61,14 +68,15 @@ public class FormSerializationWriterTests
                 {"createdDateTime", DateTimeOffset.MinValue}, // write date value
             }
         };
-        var entityList = new List<TestEntity>() { testEntity};
+        var entityList = new List<TestEntity>() { testEntity };
         using var formSerializerWriter = new FormSerializationWriter();
         // Act
-        Assert.Throws<InvalidOperationException>(() => formSerializerWriter.WriteCollectionOfObjectValues(string.Empty, entityList));
+        var exception = Assert.Throws<InvalidOperationException>(() => formSerializerWriter.WriteCollectionOfObjectValues(string.Empty, entityList));
+        Assert.Equal("Form serialization does not support collections.", exception.Message);
     }
-    
+
     [Fact]
-    public void WritesNestedObjectValuesInAdditionalData()
+    public void DoesNotWriteNestedObjectValuesInAdditionalData()
     {
         // Arrange
         var testEntity = new TestEntity()
@@ -85,6 +93,7 @@ public class FormSerializationWriterTests
         };
         using var formSerializerWriter = new FormSerializationWriter();
         // Act
-        Assert.Throws<InvalidOperationException>(() => formSerializerWriter.WriteObjectValue(string.Empty, testEntity));
+        var exception = Assert.Throws<InvalidOperationException>(() => formSerializerWriter.WriteObjectValue(string.Empty, testEntity));
+        Assert.Equal("Form serialization does not support nested objects.",exception.Message);
     }
 }
