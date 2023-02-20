@@ -54,6 +54,7 @@ public class FormParseNode : IParseNode
     private static readonly Type sbyteType = typeof(sbyte?);
     private static readonly Type stringType = typeof(string);
     private static readonly Type intType = typeof(int?);
+    private static readonly Type decimalType = typeof(decimal?);
     private static readonly Type floatType = typeof(float?);
     private static readonly Type doubleType = typeof(double?);
     private static readonly Type guidType = typeof(Guid?);
@@ -91,6 +92,8 @@ public class FormParseNode : IParseNode
                 yield return (T)(object)currentParseNode.GetFloatValue()!;
             else if(genericType == doubleType)
                 yield return (T)(object)currentParseNode.GetDoubleValue()!;
+            else if(genericType == decimalType)
+                yield return (T)(object)currentParseNode.GetDecimalValue()!;
             else if(genericType == guidType)
                 yield return (T)(object)currentParseNode.GetGuidValue()!;
             else if(genericType == dateTimeOffsetType)

@@ -31,6 +31,8 @@ public class FormSerializationWriterTests
                 { "floatValue", 1.2f},
                 { "longValue", 2L},
                 { "doubleValue", 2d},
+                { "guidValue", Guid.Parse("48d31887-5fad-4d73-a9f5-3c356e68a038")},
+                { "intValue", 1}
             }
         };
         using var formSerializerWriter = new FormSerializationWriter();
@@ -56,7 +58,9 @@ public class FormSerializationWriterTests
                                 "decimalValue=2&" +
                                 "floatValue=1.2&" +
                                 "longValue=2&" +
-                                "doubleValue=2";
+                                "doubleValue=2&" +
+                                "guidValue=48d31887-5fad-4d73-a9f5-3c356e68a038&" +
+                                "intValue=1";
         Assert.Equal(expectedString, serializedFormString);
     }
 

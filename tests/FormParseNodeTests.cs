@@ -78,6 +78,36 @@ public class FormParseNodeTests
         Assert.NotNull(numberCollectionAsFloat);
         Assert.Equal(3, numberCollectionAsFloat.Count());
         Assert.Equal((float)1, numberCollectionAsFloat.First());
+        var numberCollectionAsDecimal = numberNode?.GetCollectionOfPrimitiveValues<decimal?>();
+        Assert.NotNull(numberCollectionAsDecimal);
+        Assert.Equal(3, numberCollectionAsDecimal.Count());
+        Assert.Equal((decimal)1, numberCollectionAsDecimal.First());
+    }
+
+    [Fact]
+    public void GetCollectionOfBooleanPrimitiveValuesFromForm()
+    {
+        string TestFormData = "bools=true&" +
+                              "bools=false";
+        var formParseNode = new FormParseNode(TestFormData);
+        var numberNode = formParseNode.GetChildNode("bools");
+        var numberCollection = numberNode?.GetCollectionOfPrimitiveValues<bool?>();
+        Assert.NotNull(numberCollection);
+        Assert.Equal(2, numberCollection.Count());
+        Assert.Equal(true, numberCollection.First());
+    }
+
+    [Fact]
+    public void GetCollectionOfGuidPrimitiveValuesFromForm()
+    {
+        string TestFormData = "ids=48d31887-5fad-4d73-a9f5-3c356e68a038&" +
+                              "ids=48d31887-5fad-4d73-a9f5-3c356e68a038";
+        var formParseNode = new FormParseNode(TestFormData);
+        var numberNode = formParseNode.GetChildNode("ids");
+        var numberCollection = numberNode?.GetCollectionOfPrimitiveValues<Guid?>();
+        Assert.NotNull(numberCollection);
+        Assert.Equal(2, numberCollection.Count());
+        Assert.Equal(Guid.Parse("48d31887-5fad-4d73-a9f5-3c356e68a038"), numberCollection.First());
     }
 
     [Fact]
