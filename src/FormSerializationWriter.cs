@@ -199,20 +199,22 @@ public class FormSerializationWriter : ISerializationWriter
         if(value.HasValue) 
             WriteStringValue(key, value.Value.ToString());
     }
+    /// <inheritdoc/>
 #if NET5_0_OR_GREATER
-    void ISerializationWriter.WriteCollectionOfEnumValues<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]T>(string? key, IEnumerable<T?>? values)
+    public void WriteCollectionOfEnumValues<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]T>(string? key, IEnumerable<T?>? values) where T : struct, Enum
 #else
-    void ISerializationWriter.WriteCollectionOfEnumValues<T>(string? key, IEnumerable<T>? values)
+    public void WriteCollectionOfEnumValues<T>(string? key, IEnumerable<T?>? values) where T : struct, Enum
 #endif
     {
         if(values == null || !values.Any()) return;
         WriteStringValue(key, string.Join(",", values.Where(static x => x.HasValue)
             .Select(static x => x!.Value.ToString().ToFirstCharacterLowerCase())));
     }
+    /// <inheritdoc/>
 #if NET5_0_OR_GREATER
-    void ISerializationWriter.WriteEnumValue<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]T>(string? key, T? value)
+    public void WriteEnumValue<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]T>(string? key, T? value) where T : struct, Enum
 #else
-    void ISerializationWriter.WriteEnumValue<T>(string? key, T? value)
+    public void WriteEnumValue<T>(string? key, T? value) where T : struct, Enum
 #endif
     {
         if(value.HasValue)
