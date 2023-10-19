@@ -5,6 +5,9 @@ using System.Xml;
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Extensions;
 using Microsoft.Kiota.Abstractions.Serialization;
+#if NET5_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Microsoft.Kiota.Serialization.Form;
 /// <summary>Represents a serialization writer that can be used to write a form url encoded string.</summary>
@@ -196,12 +199,22 @@ public class FormSerializationWriter : ISerializationWriter
         if(value.HasValue) 
             WriteStringValue(key, value.Value.ToString());
     }
-    void ISerializationWriter.WriteCollectionOfEnumValues<T>(string? key, IEnumerable<T?>? values) {
+#if NET5_0_OR_GREATER
+    void ISerializationWriter.WriteCollectionOfEnumValues<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]T>(string? key, IEnumerable<T?>? values)
+#else
+    void ISerializationWriter.WriteCollectionOfEnumValues<T>(string? key, IEnumerable<T>? values)
+#endif
+    {
         if(values == null || !values.Any()) return;
         WriteStringValue(key, string.Join(",", values.Where(static x => x.HasValue)
             .Select(static x => x!.Value.ToString().ToFirstCharacterLowerCase())));
     }
-    void ISerializationWriter.WriteEnumValue<T>(string? key, T? value) {
+#if NET5_0_OR_GREATER
+    void ISerializationWriter.WriteEnumValue<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]T>(string? key, T? value)
+#else
+    void ISerializationWriter.WriteEnumValue<T>(string? key, T? value)
+#endif
+    {
         if(value.HasValue)
         {
             if(typeof(T).GetCustomAttributes<FlagsAttribute>().Any())
