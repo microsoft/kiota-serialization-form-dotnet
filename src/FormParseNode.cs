@@ -4,6 +4,9 @@ using System.Xml;
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Extensions;
 using Microsoft.Kiota.Abstractions.Serialization;
+#if NET5_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Microsoft.Kiota.Serialization.Form;
 /// <summary>Represents a parse node that can be used to parse a form url encoded string.</summary>
@@ -184,9 +187,27 @@ public class FormParseNode : IParseNode
     }
     /// <inheritdoc/>
     public Time? GetTimeValue() => DateTime.TryParse(DecodedValue, out var result) ? new Time(result) : null;
-    IEnumerable<T?> IParseNode.GetCollectionOfEnumValues<T>() => DecodedValue.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(v => GetEnumValueInternal<T>(v));
-    T? IParseNode.GetEnumValue<T>() => GetEnumValueInternal<T>(DecodedValue);
+#if NET5_0_OR_GREATER
+    IEnumerable<T?> IParseNode.GetCollectionOfEnumValues<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]T>()
+#else
+    IEnumerable<T?> IParseNode.GetCollectionOfEnumValues<T>()
+#endif
+    {
+        return DecodedValue.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(v => GetEnumValueInternal<T>(v));
+    }
+#if NET5_0_OR_GREATER
+    T? IParseNode.GetEnumValue<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]T>()
+#else
+    T? IParseNode.GetEnumValue<T>()
+#endif
+    {
+        return GetEnumValueInternal<T>(DecodedValue);
+    }
+#if NET5_0_OR_GREATER
+    private static T? GetEnumValueInternal<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]T>(string value) where T : struct, Enum
+#else
     private static T? GetEnumValueInternal<T>(string value) where T : struct, Enum
+#endif
     {
         if(string.IsNullOrEmpty(value))
             return null;
