@@ -97,7 +97,7 @@ public class FormSerializationWriter : ISerializationWriter
     /// <inheritdoc/>
     public void WriteByteArrayValue(string? key, byte[]? value) {
         if(value != null)//empty array is meaningful
-            WriteStringValue(key, value.Any() ? Convert.ToBase64String(value) : string.Empty);
+            WriteStringValue(key, value.Length > 0 ? Convert.ToBase64String(value) : string.Empty);
     }
     /// <inheritdoc/>
     public void WriteByteValue(string? key, byte? value) {
@@ -109,7 +109,7 @@ public class FormSerializationWriter : ISerializationWriter
     /// <inheritdoc/>
     public void WriteCollectionOfPrimitiveValues<T>(string? key, IEnumerable<T>? values)
     {
-        if(values == null || !values.Any()) return;
+        if(values == null) return;
         foreach(var value in values.Where(static x => x != null))
             WriteAnyValue(key,value!);
     }
@@ -201,7 +201,7 @@ public class FormSerializationWriter : ISerializationWriter
     }
     /// <inheritdoc/>
 #if NET5_0_OR_GREATER
-    public void WriteCollectionOfEnumValues<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]T>(string? key, IEnumerable<T?>? values) where T : struct, Enum
+    public void WriteCollectionOfEnumValues<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] T>(string? key, IEnumerable<T?>? values) where T : struct, Enum
 #else
     public void WriteCollectionOfEnumValues<T>(string? key, IEnumerable<T?>? values) where T : struct, Enum
 #endif
@@ -212,7 +212,7 @@ public class FormSerializationWriter : ISerializationWriter
     }
     /// <inheritdoc/>
 #if NET5_0_OR_GREATER
-    public void WriteEnumValue<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]T>(string? key, T? value) where T : struct, Enum
+    public void WriteEnumValue<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] T>(string? key, T? value) where T : struct, Enum
 #else
     public void WriteEnumValue<T>(string? key, T? value) where T : struct, Enum
 #endif
@@ -220,7 +220,12 @@ public class FormSerializationWriter : ISerializationWriter
         if(value.HasValue)
         {
             if(typeof(T).GetCustomAttributes<FlagsAttribute>().Any())
-                WriteStringValue(key, string.Join(",", Enum.GetValues(typeof(T))
+                WriteStringValue(key, string.Join(",",
+#if NET5_0_OR_GREATER
+                        Enum.GetValues<T>()
+#else
+                        Enum.GetValues(typeof(T))
+#endif
                                         .Cast<T>()
                                         .Where(x => value.Value.HasFlag(x))
                                         .Select(static x => Enum.GetName(typeof(T),x))
