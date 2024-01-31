@@ -225,11 +225,11 @@ public class FormSerializationWriter : ISerializationWriter
                         Enum.GetValues<T>()
 #else
                         Enum.GetValues(typeof(T))
+                            .Cast<T>()
 #endif
-                                        .Cast<T>()
-                                        .Where(x => value.Value.HasFlag(x))
-                                        .Select(static x => Enum.GetName(typeof(T),x))
-                                        .Select(static x => x.ToFirstCharacterLowerCase())));
+                            .Where(x => value.Value.HasFlag(x))
+                            .Select(static x => Enum.GetName(typeof(T),x))
+                            .Select(static x => x.ToFirstCharacterLowerCase())));
             else WriteStringValue(key, value.Value.ToString().ToFirstCharacterLowerCase());
         }
     }
