@@ -7,7 +7,7 @@ public class FormSerializationWriterFactoryTests
     public void GetsWriterForFormContentType()
     {
         var formWriter = _formSerializationFactory.GetSerializationWriter(_formSerializationFactory.ValidContentType);
-        
+
         // Assert
         Assert.NotNull(formWriter);
         Assert.IsAssignableFrom<FormSerializationWriter>(formWriter);
@@ -27,9 +27,9 @@ public class FormSerializationWriterFactoryTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void ThrowsArgumentNullExceptionForNoContentType(string contentType)
+    public void ThrowsArgumentNullExceptionForNoContentType(string? contentType)
     {
-        var exception = Assert.Throws<ArgumentNullException>(() => _formSerializationFactory.GetSerializationWriter(contentType));
+        var exception = Assert.Throws<ArgumentNullException>(() => _formSerializationFactory.GetSerializationWriter(contentType!));
 
         // Assert
         Assert.NotNull(exception);

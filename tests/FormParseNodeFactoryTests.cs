@@ -10,7 +10,7 @@ public class FormParseNodeFactoryTests
     public void GetsWriterForFormContentType()
     {
         using var formStream = new MemoryStream(Encoding.UTF8.GetBytes(TestJsonString));
-        var formParseNode = _formParseNodeFactory.GetRootParseNode(_formParseNodeFactory.ValidContentType,formStream);
+        var formParseNode = _formParseNodeFactory.GetRootParseNode(_formParseNodeFactory.ValidContentType, formStream);
 
         // Assert
         Assert.NotNull(formParseNode);
@@ -21,7 +21,7 @@ public class FormParseNodeFactoryTests
     {
         var streamContentType = "application/octet-stream";
         using var jsonStream = new MemoryStream(Encoding.UTF8.GetBytes(TestJsonString));
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => _formParseNodeFactory.GetRootParseNode(streamContentType,jsonStream));
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => _formParseNodeFactory.GetRootParseNode(streamContentType, jsonStream));
 
         // Assert
         Assert.NotNull(exception);
@@ -31,10 +31,10 @@ public class FormParseNodeFactoryTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void ThrowsArgumentNullExceptionForNoContentType(string contentType)
+    public void ThrowsArgumentNullExceptionForNoContentType(string? contentType)
     {
         using var jsonStream = new MemoryStream(Encoding.UTF8.GetBytes(TestJsonString));
-        var exception = Assert.Throws<ArgumentNullException>(() => _formParseNodeFactory.GetRootParseNode(contentType,jsonStream));
+        var exception = Assert.Throws<ArgumentNullException>(() => _formParseNodeFactory.GetRootParseNode(contentType!, jsonStream));
 
         // Assert
         Assert.NotNull(exception);
