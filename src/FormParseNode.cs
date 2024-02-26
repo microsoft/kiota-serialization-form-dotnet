@@ -187,7 +187,7 @@ public class FormParseNode : IParseNode
     /// <inheritdoc/>
     public Time? GetTimeValue() => DateTime.TryParse(DecodedValue, out var result) ? new Time(result) : null;
 #if NET5_0_OR_GREATER
-    IEnumerable<T?> IParseNode.GetCollectionOfEnumValues<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]T>()
+    IEnumerable<T?> IParseNode.GetCollectionOfEnumValues<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] T>()
 #else
     IEnumerable<T?> IParseNode.GetCollectionOfEnumValues<T>()
 #endif
@@ -195,18 +195,15 @@ public class FormParseNode : IParseNode
         return DecodedValue.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(v => GetEnumValueInternal<T>(v));
     }
 #if NET5_0_OR_GREATER
-    T? IParseNode.GetEnumValue<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]T>()
+    T? IParseNode.GetEnumValue<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] T>()
 #else
     T? IParseNode.GetEnumValue<T>()
 #endif
     {
         return GetEnumValueInternal<T>(DecodedValue);
     }
-#if NET5_0_OR_GREATER
-    private static T? GetEnumValueInternal<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]T>(string value) where T : struct, Enum
-#else
+    
     private static T? GetEnumValueInternal<T>(string value) where T : struct, Enum
-#endif
     {
         if(string.IsNullOrEmpty(value))
             return null;
