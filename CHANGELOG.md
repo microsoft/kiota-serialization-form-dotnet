@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+## [1.1.6] - 2024-04-19
+
+### Changed
+
+- Switch to license expression & bump abstractions (https://github.com/microsoft/kiota-serialization-form-dotnet/issues/130)
+
 ## [1.1.5] - 2024-02-27
 
 ### Changed
