@@ -34,7 +34,7 @@ public class FormParseNodeFactory : IAsyncParseNodeFactory
             throw new ArgumentNullException(nameof(content));
 
         using var reader = new StreamReader(content);
-        var rawValue = await reader.ReadToEndAsync();
+        var rawValue = await reader.ReadToEndAsync().ConfigureAwait(false);
         return new FormParseNode(rawValue);
     }
 }
