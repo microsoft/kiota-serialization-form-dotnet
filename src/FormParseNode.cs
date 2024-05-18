@@ -203,20 +203,29 @@ public class FormParseNode : IParseNode
         return GetEnumValueInternal<T>(DecodedValue);
     }
     
-    private static T? GetEnumValueInternal<T>(string value) where T : struct, Enum
+    private static T? GetEnumValueInternal<T>(string rawValue) where T : struct, Enum
     {
-        if(string.IsNullOrEmpty(value))
+        if(string.IsNullOrEmpty(rawValue))
             return null;
         if(typeof(T).GetCustomAttributes<FlagsAttribute>().Any())
         {
-            return (T)(object)value
-                .Split(',')
-                .Select(static x => Enum.TryParse<T>(x, true, out var result) ? result : (T?)null)
-                .Where(static x => x is not null)
-                .Select(x => (int)((object)x!))
-                .Sum();
+            ReadOnlySpan<char> valueSpan = rawValue.AsSpan();
+            int value = 0;
+            while(valueSpan.Length > 0)
+            {
+                int commaIndex = valueSpan.IndexOf(',');
+                ReadOnlySpan<char> valueNameSpan = commaIndex < 0 ? valueSpan : valueSpan.Slice(0, commaIndex);
+#if NET6_0_OR_GREATER
+                if(Enum.TryParse<T>(valueNameSpan, true, out var result))
+#else
+                if(Enum.TryParse<T>(valueNameSpan.ToString(), true, out var result))
+#endif
+                    value |= (int)(object)result;
+                valueSpan = commaIndex < 0 ? ReadOnlySpan<char>.Empty : valueSpan.Slice(commaIndex + 1);
+            }
+            return (T)(object)value;
         }
-        if(Enum.TryParse<T>(value, out var result))
+        else if(Enum.TryParse<T>(rawValue, out var result))
             return result;
         return null;
     }
