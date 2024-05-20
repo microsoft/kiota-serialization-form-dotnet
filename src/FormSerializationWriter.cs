@@ -220,16 +220,25 @@ public class FormSerializationWriter : ISerializationWriter
         if(value.HasValue)
         {
             if(typeof(T).GetCustomAttributes<FlagsAttribute>().Any())
-                WriteStringValue(key, string.Join(",",
+            {
+                var values =
 #if NET5_0_OR_GREATER
-                        Enum.GetValues<T>()
+                    Enum.GetValues<T>();
 #else
-                        Enum.GetValues(typeof(T))
-                            .Cast<T>()
+                    Enum.GetValues(typeof(T)).Cast<T>();
 #endif
-                            .Where(x => value.Value.HasFlag(x))
-                            .Select(static x => Enum.GetName(typeof(T),x))
-                            .Select(static x => x.ToFirstCharacterLowerCase())));
+                StringBuilder valueNames = new StringBuilder();
+                foreach(var x in values)
+                {
+                    if(value.Value.HasFlag(x) && Enum.GetName(typeof(T), x) is string valueName)
+                    {
+                        if(valueNames.Length > 0)
+                            valueNames.Append(",");
+                        valueNames.Append(valueName.ToFirstCharacterLowerCase());
+                    }
+                }
+                WriteStringValue(key, valueNames.ToString());
+            }
             else WriteStringValue(key, value.Value.ToString().ToFirstCharacterLowerCase());
         }
     }
