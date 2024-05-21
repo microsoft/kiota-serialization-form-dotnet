@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.2] - 2024-05-21
+
+### Changed
+
+- Updated serialization and deserialization of enum collection to remove LINQ to reduce NativeAOT output size
+
 ## [1.2.1] - 2024-05-20
 
 ### Changed

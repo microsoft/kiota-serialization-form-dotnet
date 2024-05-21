@@ -206,9 +206,23 @@ public class FormSerializationWriter : ISerializationWriter
     public void WriteCollectionOfEnumValues<T>(string? key, IEnumerable<T?>? values) where T : struct, Enum
 #endif
     {
-        if(values == null || !values.Any()) return;
-        WriteStringValue(key, string.Join(",", values.Where(static x => x.HasValue)
-            .Select(static x => x!.Value.ToString().ToFirstCharacterLowerCase())));
+        if(values == null) return;
+
+        StringBuilder? valueNames = null;
+        foreach(var x in values)
+        {
+            if(x.HasValue && Enum.GetName(typeof(T), x.Value) is string valueName)
+            {
+                if(valueNames == null)
+                    valueNames = new StringBuilder();
+                else
+                    valueNames.Append(",");
+                valueNames.Append(valueName.ToFirstCharacterLowerCase());
+            }
+        }
+
+        if(valueNames is not null)
+            WriteStringValue(key, valueNames.ToString());
     }
     /// <inheritdoc/>
 #if NET5_0_OR_GREATER

@@ -192,7 +192,8 @@ public class FormParseNode : IParseNode
     IEnumerable<T?> IParseNode.GetCollectionOfEnumValues<T>()
 #endif
     {
-        return DecodedValue.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(v => GetEnumValueInternal<T>(v));
+        foreach (var v in DecodedValue.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            yield return GetEnumValueInternal<T>(v);
     }
 #if NET5_0_OR_GREATER
     T? IParseNode.GetEnumValue<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] T>()
