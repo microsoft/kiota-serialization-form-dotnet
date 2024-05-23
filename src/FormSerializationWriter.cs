@@ -5,9 +5,12 @@ using System.Xml;
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Extensions;
 using Microsoft.Kiota.Abstractions.Serialization;
+using System.IO;
 #if NET5_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
 #endif
+using System;
+using System.Collections.Generic;
 
 namespace Microsoft.Kiota.Serialization.Form;
 /// <summary>Represents a serialization writer that can be used to write a form url encoded string.</summary>
@@ -89,30 +92,38 @@ public class FormSerializationWriter : ISerializationWriter
 
         }
     }
+
     /// <inheritdoc/>
     public void WriteBoolValue(string? key, bool? value) {
         if(value.HasValue) 
             WriteStringValue(key, value.Value.ToString().ToLowerInvariant());
     }
+
     /// <inheritdoc/>
     public void WriteByteArrayValue(string? key, byte[]? value) {
         if(value != null)//empty array is meaningful
             WriteStringValue(key, value.Length > 0 ? Convert.ToBase64String(value) : string.Empty);
     }
+
     /// <inheritdoc/>
     public void WriteByteValue(string? key, byte? value) {
         if(value.HasValue) 
             WriteIntValue(key, Convert.ToInt32(value.Value));
     }
+ 
     /// <inheritdoc/>
     public void WriteCollectionOfObjectValues<T>(string? key, IEnumerable<T>? values) where T : IParsable => throw new InvalidOperationException("Form serialization does not support collections.");
+ 
     /// <inheritdoc/>
-    public void WriteCollectionOfPrimitiveValues<T>(string? key, IEnumerable<T>? values)
+public void WriteCollectionOfPrimitiveValues<T>(string? key, IEnumerable<T>? values)
+{
+    if (values == null) return;
+    foreach (var value in values)
     {
-        if(values == null) return;
-        foreach(var value in values.Where(static x => x != null))
-            WriteAnyValue(key,value!);
+        if (value != null)
+            WriteAnyValue(key, value);
     }
+}
     /// <inheritdoc/>
     public void WriteDateTimeOffsetValue(string? key, DateTimeOffset? value) {
         if(value.HasValue) 
@@ -162,18 +173,27 @@ public class FormSerializationWriter : ISerializationWriter
     {
         if(depth > 0) throw new InvalidOperationException("Form serialization does not support nested objects.");
         depth++;
-        if(value == null && !additionalValuesToMerge.Any(static x => x != null)) return;
+        if (value == null)
+        {
+            foreach (var x in additionalValuesToMerge)
+            {
+                if (x != null) break;
+            }
+        }
+
         if(value != null) {
             OnBeforeObjectSerialization?.Invoke(value);
             OnStartObjectSerialization?.Invoke(value, this);
             value.Serialize(this);
         }
-        foreach(var additionalValueToMerge in additionalValuesToMerge.Where(static x => x != null))
+        foreach (var additionalValueToMerge in additionalValuesToMerge)
         {
-            OnBeforeObjectSerialization?.Invoke(additionalValueToMerge!);
-            OnStartObjectSerialization?.Invoke(additionalValueToMerge!, this);
-            additionalValueToMerge!.Serialize(this);
-            OnAfterObjectSerialization?.Invoke(additionalValueToMerge!);
+            if (additionalValueToMerge is null) continue;
+
+            OnBeforeObjectSerialization?.Invoke(additionalValueToMerge);
+            OnStartObjectSerialization?.Invoke(additionalValueToMerge, this);
+            additionalValueToMerge.Serialize(this);
+            OnAfterObjectSerialization?.Invoke(additionalValueToMerge);
         }
         if(value != null)
             OnAfterObjectSerialization?.Invoke(value);
@@ -206,24 +226,25 @@ public class FormSerializationWriter : ISerializationWriter
     public void WriteCollectionOfEnumValues<T>(string? key, IEnumerable<T?>? values) where T : struct, Enum
 #endif
     {
-        if(values == null) return;
+        if (values is null) return;
 
-        StringBuilder? valueNames = null;
-        foreach(var x in values)
+        using (var enumerator = values.GetEnumerator())
         {
-            if(x.HasValue && Enum.GetName(typeof(T), x.Value) is string valueName)
+            if (!enumerator.MoveNext()) return;
+        }
+
+        List<string> nonNullValues = new List<string>();
+        foreach (var value in values)
+        {
+            if (value.HasValue)
             {
-                if(valueNames == null)
-                    valueNames = new StringBuilder();
-                else
-                    valueNames.Append(",");
-                valueNames.Append(valueName.ToFirstCharacterLowerCase());
+                nonNullValues.Add(value.Value.ToString().ToFirstCharacterLowerCase()!);
             }
         }
 
-        if(valueNames is not null)
-            WriteStringValue(key, valueNames.ToString());
+        WriteStringValue(key, string.Join(",", nonNullValues));
     }
+
     /// <inheritdoc/>
 #if NET5_0_OR_GREATER
     public void WriteEnumValue<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] T>(string? key, T? value) where T : struct, Enum
@@ -233,13 +254,13 @@ public class FormSerializationWriter : ISerializationWriter
     {
         if(value.HasValue)
         {
-            if(typeof(T).GetCustomAttributes<FlagsAttribute>().Any())
+            if (typeof(T).IsDefined(typeof(FlagsAttribute)))
             {
-                var values =
+                T[] values =
 #if NET5_0_OR_GREATER
                     Enum.GetValues<T>();
 #else
-                    Enum.GetValues(typeof(T)).Cast<T>();
+                    (T[])Enum.GetValues(typeof(T));
 #endif
                 StringBuilder valueNames = new StringBuilder();
                 foreach(var x in values)

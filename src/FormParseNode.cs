@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Xml;
+using System;
+using System.Collections.Generic;
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Extensions;
 using Microsoft.Kiota.Abstractions.Serialization;
@@ -21,14 +23,29 @@ public class FormParseNode : IParseNode
     public FormParseNode(string rawValue)
     {
         RawValue = rawValue ?? throw new ArgumentNullException(nameof(rawValue));
-        Fields = rawValue.Split(new char[] {'&'}, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(static x => x.Split(new char[] {'='}, StringSplitOptions.RemoveEmptyEntries))
-                        .Where(static x => x.Length == 2)
-                        .Select(static x => (key: SanitizeKey(x[0]), value: x[1].Trim()))
-                        .GroupBy(static x => x.key, StringComparer.OrdinalIgnoreCase)
-                        .Select(static x => (key: x.Key, value: string.Join(",", x.Select(static y => y.value))))
-                        .ToDictionary(static x => x.key, static x => x.value, StringComparer.OrdinalIgnoreCase);
+        Fields = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        char[] pairDelimiter = new char[] { '=' };
+        string[] pairs = rawValue.Split(new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (string pair in pairs)
+        {
+            string[] keyValue = pair.Split(pairDelimiter, StringSplitOptions.RemoveEmptyEntries);
+            if (keyValue.Length == 2)
+            {
+                string key = SanitizeKey(keyValue[0]);
+                string value = keyValue[1].Trim();
+
+                if (Fields.ContainsKey(key))
+                {
+                    Fields[key] += $",{value}";
+                }
+                else
+                {
+                    Fields.Add(key, value);
+                }
+            }
+        }
     }
+
     private static string SanitizeKey(string key) {
         if (string.IsNullOrEmpty(key)) return key;
         return Uri.UnescapeDataString(key.Trim());
@@ -137,7 +154,7 @@ public class FormParseNode : IParseNode
     }
     private void AssignFieldValues<T>(T item) where T : IParsable
     {
-        if(!Fields.Any()) return;
+        if(Fields.Count == 0) return;
         IDictionary<string, object>? itemAdditionalData = null;
         if(item is IAdditionalDataHolder holder)
         {
@@ -171,10 +188,13 @@ public class FormParseNode : IParseNode
             }
         }
     }
+
     /// <inheritdoc/>
     public sbyte? GetSbyteValue() => sbyte.TryParse(DecodedValue, out var result) ? result : null;
+
     /// <inheritdoc/>
     public string GetStringValue() => DecodedValue;
+
     /// <inheritdoc/>
     public TimeSpan? GetTimeSpanValue() {
         var rawString = DecodedValue;
@@ -184,8 +204,10 @@ public class FormParseNode : IParseNode
         // Parse an ISO8601 duration.http://en.wikipedia.org/wiki/ISO_8601#Durations to a TimeSpan
         return XmlConvert.ToTimeSpan(rawString);
     }
+
     /// <inheritdoc/>
     public Time? GetTimeValue() => DateTime.TryParse(DecodedValue, out var result) ? new Time(result) : null;
+
 #if NET5_0_OR_GREATER
     IEnumerable<T?> IParseNode.GetCollectionOfEnumValues<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] T>()
 #else
@@ -195,6 +217,7 @@ public class FormParseNode : IParseNode
         foreach (var v in DecodedValue.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
             yield return GetEnumValueInternal<T>(v);
     }
+
 #if NET5_0_OR_GREATER
     T? IParseNode.GetEnumValue<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] T>()
 #else
@@ -208,7 +231,7 @@ public class FormParseNode : IParseNode
     {
         if(string.IsNullOrEmpty(rawValue))
             return null;
-        if(typeof(T).GetCustomAttributes<FlagsAttribute>().Any())
+        if (typeof(T).IsDefined(typeof(FlagsAttribute)))
         {
             ReadOnlySpan<char> valueSpan = rawValue.AsSpan();
             int value = 0;
