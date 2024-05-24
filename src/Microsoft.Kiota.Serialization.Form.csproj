@@ -8,7 +8,6 @@
     <Authors>Microsoft</Authors>
     <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0;net6.0;net8.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
@@ -16,7 +15,7 @@
     <PackageProjectUrl>https://aka.ms/kiota/docs</PackageProjectUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <Deterministic>true</Deterministic>
-    <VersionPrefix>1.2.3</VersionPrefix>
+    <VersionPrefix>1.2.4</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

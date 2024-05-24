@@ -1,4 +1,5 @@
 using Microsoft.Kiota.Abstractions.Serialization;
+using System;
 
 namespace Microsoft.Kiota.Serialization.Form;
 /// <summary>Represents a serialization writer factory that can be used to create a form url encoded serialization writer.</summary>
