@@ -173,13 +173,7 @@ public void WriteCollectionOfPrimitiveValues<T>(string? key, IEnumerable<T>? val
     {
         if(depth > 0) throw new InvalidOperationException("Form serialization does not support nested objects.");
         depth++;
-        if (value == null)
-        {
-            foreach (var x in additionalValuesToMerge)
-            {
-                if (x != null) break;
-            }
-        }
+        if (value == null && !Array.Exists(additionalValuesToMerge, static x => x is not null)) return;
 
         if(value != null) {
             OnBeforeObjectSerialization?.Invoke(value);
@@ -226,23 +220,23 @@ public void WriteCollectionOfPrimitiveValues<T>(string? key, IEnumerable<T>? val
     public void WriteCollectionOfEnumValues<T>(string? key, IEnumerable<T?>? values) where T : struct, Enum
 #endif
     {
-        if (values is null) return;
+        if(values == null) return;
 
-        using (var enumerator = values.GetEnumerator())
+        StringBuilder? valueNames = null;
+        foreach(var x in values)
         {
-            if (!enumerator.MoveNext()) return;
-        }
-
-        List<string> nonNullValues = new List<string>();
-        foreach (var value in values)
-        {
-            if (value.HasValue)
+            if(x.HasValue && Enum.GetName(typeof(T), x.Value) is string valueName)
             {
-                nonNullValues.Add(value.Value.ToString().ToFirstCharacterLowerCase()!);
+                if(valueNames == null)
+                    valueNames = new StringBuilder();
+                else
+                    valueNames.Append(",");
+                valueNames.Append(valueName.ToFirstCharacterLowerCase());
             }
         }
 
-        WriteStringValue(key, string.Join(",", nonNullValues));
+        if(valueNames is not null)
+            WriteStringValue(key, valueNames.ToString());
     }
 
     /// <inheritdoc/>
