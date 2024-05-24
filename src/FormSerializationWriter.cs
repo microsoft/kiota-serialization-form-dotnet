@@ -115,15 +115,16 @@ public class FormSerializationWriter : ISerializationWriter
     public void WriteCollectionOfObjectValues<T>(string? key, IEnumerable<T>? values) where T : IParsable => throw new InvalidOperationException("Form serialization does not support collections.");
  
     /// <inheritdoc/>
-public void WriteCollectionOfPrimitiveValues<T>(string? key, IEnumerable<T>? values)
-{
-    if (values == null) return;
-    foreach (var value in values)
+    public void WriteCollectionOfPrimitiveValues<T>(string? key, IEnumerable<T>? values)
     {
-        if (value != null)
-            WriteAnyValue(key, value);
+        if (values == null) return;
+        foreach (var value in values)
+        {
+            if (value != null)
+                WriteAnyValue(key, value);
+        }
     }
-}
+
     /// <inheritdoc/>
     public void WriteDateTimeOffsetValue(string? key, DateTimeOffset? value) {
         if(value.HasValue) 
