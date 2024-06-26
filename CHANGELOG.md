@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.5] - 2024-06-26
+
+### Changed
+
+- Fixed a bug where new parse nodes would be missing event receivers. [#153](https://github.com/microsoft/kiota-serialization-form-dotnet/issues/153)
+
 ## [1.2.4] - 2024-05-23
 
 ### Changed

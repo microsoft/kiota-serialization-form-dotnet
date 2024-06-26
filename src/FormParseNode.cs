@@ -65,7 +65,11 @@ public class FormParseNode : IParseNode
     /// <inheritdoc/>
     public byte? GetByteValue() => byte.TryParse(DecodedValue, out var result) ? result : null;
     /// <inheritdoc/>
-    public IParseNode? GetChildNode(string identifier) => Fields.TryGetValue(SanitizeKey(identifier), out var value) ? new FormParseNode(value) : null;
+    public IParseNode? GetChildNode(string identifier) => Fields.TryGetValue(SanitizeKey(identifier), out var value) ? 
+        new FormParseNode(value){
+            OnBeforeAssignFieldValues = OnBeforeAssignFieldValues,
+            OnAfterAssignFieldValues = OnAfterAssignFieldValues
+        } : null;
     /// <inheritdoc/>
     public IEnumerable<T> GetCollectionOfObjectValues<T>(ParsableFactory<T> factory) where T : IParsable => throw new InvalidOperationException("collections are not supported with uri form encoding");
 
